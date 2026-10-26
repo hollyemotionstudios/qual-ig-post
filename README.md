@@ -12,9 +12,10 @@ URL options:
 - `?story=6` sets the seconds for the story progress bar
 - `?screen=story` opens straight on the shared screen
 
-The app opens in standalone mode so the device's real status bar (time, signal, battery) shows. There's no fake
-status bar: the empty strip above the photo on the shared screen (55px in Figma) is left for it, and the post
-header is kept clear of it.
+Installed on Android, the app opens fullscreen (manifest display fullscreen, falling back to standalone), so the
+browser UI and the system status bar are hidden; a swipe down from the top shows the status bar briefly. There's no
+fake status bar: the strip above the photo on the shared screen (55px in Figma) stays empty, and if a status bar
+does draw over the page, the post header is kept clear of it.
 
 sw.js is a pass-through service worker (caches nothing). It's there so Chrome on Android installs a real app
 instead of a home-screen shortcut that opens in a browser tab.
