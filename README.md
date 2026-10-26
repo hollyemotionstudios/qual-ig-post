@@ -3,12 +3,12 @@
 Built from Figma file jO4VrQnb9mAVd7SkmDKv9Y: frames "IG Posting 1" (2165:56), "IG Posting 2" (7:1308)
 and "Sharing the post with others" (9:3013), all 523×847 (Fold folded screen).
 
-Flow: post with editable caption → tap the caption box to type: the device's own keyboard opens and the caption box sits just above it,
+Flow: post with an empty caption box → tap the caption box to type: the device's own keyboard opens and the caption box sits just above it,
 with the photo shrinking to fit (like IG Posting 2; on a computer it uses the Figma spacing)
-→ tap the blue arrow → shared screen. The X goes back to the post and restores the default caption for the next take.
+→ tap the blue arrow → shared screen, shown as the last of 5 stories (four full bars, the fifth fills). The X goes back to the post and empties the caption for the next take.
 
 URL options:
-- `?text=...` replaces the default caption ("Jamme. Jamme. / Let’s go to the top")
+- `?text=...` pre-fills the caption (it starts empty)
 - `?story=6` sets the seconds for the story progress bar
 - `?screen=story` opens straight on the shared screen
 

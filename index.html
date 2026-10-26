@@ -118,7 +118,8 @@
   .bars { position: absolute; left: 40px; top: 61px; width: 450px; height: 2px; display: flex; gap: 6px; z-index: 1; }
   .bars span { flex: 1; border-radius: 1px; background: rgba(255,255,255,.35); overflow: hidden; }
   .bars i { display: block; height: 100%; width: 0; background: #fff; }
-  #story.play .bars span:first-child i { width: 100%; transition: width var(--story-time, 6s) linear; }
+  .bars span:not(:last-child) i { width: 100%; }   /* the post is the last of 5 stories */
+  #story.play .bars span:last-child i { width: 100%; transition: width var(--story-time, 6s) linear; }
 
   #story .user { left: 36px; top: 75px; z-index: 1; }
   .more { position: absolute; left: 420px; top: 80px; width: 24px; height: 24px; z-index: 1; }
@@ -166,7 +167,7 @@
 
   <section id="story" class="screen" hidden>
     <div class="frame"><img src="assets/photo.jpg" alt=""></div>
-    <div class="bars"><span><i></i></span><span><i></i></span></div>
+    <div class="bars"><span><i></i></span><span><i></i></span><span><i></i></span><span><i></i></span><span><i></i></span></div>
     <div class="user">
       <img class="av" src="assets/avatar.jpg" alt="">
       <span>Kimiantonelli <span class="when">18h</span></span>
@@ -186,10 +187,10 @@
 
 </div>
 <script>
-  // URL options: ?text=…  replaces the default caption
+  // URL options: ?text=…  pre-fills the caption (empty by default)
   //              ?story=6  seconds for the story progress bar
   //              ?screen=story  opens straight on the shared screen
-  const DEFAULT_TEXT = "Jamme. Jamme.\nLet’s go to the top";
+  const DEFAULT_TEXT = "";
 
   const q = new URLSearchParams(location.search);
   const startText = q.has("text") ? q.get("text") : DEFAULT_TEXT;
@@ -303,7 +304,7 @@
     story.classList.remove("play");
     post.hidden = false;
     document.body.classList.remove("on-story");
-    setText(startText);   // fresh caption for the next take
+    setText(startText);   // empty caption for the next take
   }
 
   const send = document.getElementById("send");
