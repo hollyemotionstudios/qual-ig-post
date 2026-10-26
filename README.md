@@ -9,8 +9,11 @@ Flow: post with editable caption → tap the caption box to type (photo shrinks,
 URL options:
 - `?text=...` replaces the default caption ("Jamme. Jamme. / Let’s go to the top")
 - `?kb=1` / `?kb=0` forces the Figma keyboard picture on or off while typing (default: shown only on non-touch screens)
-- `?status=0` hides the fake status bar on the shared screen
 - `?story=6` sets the seconds for the story progress bar
 - `?screen=story` opens straight on the shared screen
+
+The app opens in standalone mode so the device's real status bar (time, signal, battery) shows. There's no fake
+status bar: the empty strip above the photo on the shared screen (55px in Figma) is left for it, and the post
+header is kept clear of it.
 
 Preview locally: `python3 -m http.server 5181` in this folder.
