@@ -315,5 +315,9 @@
 
   if (q.get("screen") === "story") showStory();
 </script>
+<script>
+  // Needed for a real install on Android (see sw.js).
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+</script>
 </body>
 </html>

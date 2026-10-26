@@ -16,4 +16,7 @@ The app opens in standalone mode so the device's real status bar (time, signal, 
 status bar: the empty strip above the photo on the shared screen (55px in Figma) is left for it, and the post
 header is kept clear of it.
 
+sw.js is a pass-through service worker (caches nothing). It's there so Chrome on Android installs a real app
+instead of a home-screen shortcut that opens in a browser tab.
+
 Preview locally: `python3 -m http.server 5181` in this folder.
