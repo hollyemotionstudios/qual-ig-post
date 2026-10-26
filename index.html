@@ -140,6 +140,26 @@
   @keyframes pop { 40% { transform: scale(1.3); } }
   .share { position: absolute; left: 445px; top: 781px; width: 44px; height: 44px; }
   .share svg { width: 21.9px; height: 19.4px; overflow: visible; }
+  /* ---------- live reactions on the story ---------- */
+  /* Comments rise up the lower part of the photo, newest at the bottom, fading out at the top. */
+  .shade {
+    position: absolute; inset: auto 0 0 0; height: 330px;
+    background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.45));
+  }
+  .comments {
+    position: absolute; left: 30px; top: 445px; width: 350px; height: 292px; z-index: 1;
+    overflow: hidden; pointer-events: none;
+    -webkit-mask-image: linear-gradient(transparent, #000 90px); mask-image: linear-gradient(transparent, #000 90px);
+  }
+  .comments ol { position: absolute; left: 0; right: 0; bottom: 0; margin: 0; padding: 0; list-style: none; }
+  .comments li { display: flex; align-items: center; gap: 12px; padding-top: 14px; }
+  .comments img { flex: none; width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #333; }
+  .comments p { margin: 0; min-width: 0; font: 400 15px/19px var(--ui); text-shadow: 0 1px 3px rgba(0,0,0,.5); }
+  .comments b { display: block; font-weight: 600; font-size: 14px; }
+
+  /* Rainbow hearts float up from the like button. */
+  .hearts { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+  .hearts svg { position: absolute; left: 0; top: 0; overflow: visible; will-change: transform, opacity; }
 </style>
 </head>
 <body>
@@ -166,7 +186,8 @@
   </section>
 
   <section id="story" class="screen" hidden>
-    <div class="frame"><img src="assets/photo.jpg" alt=""></div>
+    <div class="frame"><img src="assets/photo.jpg" alt=""><div class="shade"></div></div>
+    <div class="comments" aria-hidden="true"><ol id="comments"></ol></div>
     <div class="bars"><span><i></i></span><span><i></i></span><span><i></i></span><span><i></i></span><span><i></i></span></div>
     <div class="user">
       <img class="av" src="assets/avatar.jpg" alt="">
@@ -177,6 +198,7 @@
       <svg viewBox="0 0 20 20" fill="none"><path d="M1 1L19 19M19 1L1 19" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
     </button>
     <div class="reply">Send message</div>
+    <div class="hearts" id="hearts" aria-hidden="true"></div>
     <button class="heart" id="heart" aria-label="Like">
       <svg viewBox="0 0 22.4996 20.0004" fill="none"><path d="M13.002 2.42676C14.8649 0.732937 17.2779 0.459446 19.0996 1.55469C21.0143 2.70675 22.0205 5.17248 21.4326 7.53906V7.54004C20.8747 9.78771 19.5094 11.6029 17.8506 13.3975C15.8957 15.5122 13.6309 17.2977 11.2539 19.0283C8.20074 16.7958 5.32529 14.5207 3.12109 11.5801L2.67676 10.9648L2.30469 10.4072C1.47642 9.10259 0.930513 7.76852 0.901367 6.28809C0.858732 4.12604 2.0417 2.18801 3.76465 1.35742L3.93262 1.28027C5.74193 0.499061 8.00088 0.953862 9.6416 2.56152C9.96337 2.877 10.2943 3.19503 10.6641 3.55371L11.3145 4.18359L11.9404 3.53027C12.2561 3.20101 12.4912 2.93051 12.7422 2.67676L13.002 2.42676Z" stroke="#fff" stroke-width="1.8"/></svg>
     </button>
@@ -286,6 +308,180 @@
     if (editing && !e.target.closest(".box")) caption.blur();
   });
 
+  // Live reactions on the shared screen. Comments (username, comment, avatar frame) come from the
+  // "Export" tab of the comments sheet; photos are assets/avatars/<frame>.jpg.
+  const COMMENTS = [
+    ["kimi_tifoso_bo", "Forza Kimi! 🇮🇹🔥", 179],
+    ["giulia.rossi.92", "In cima, Kimi! 🏔️", 72],
+    ["nonno_enzo_mo", "Andiamo, campione! 🏆", 109],
+    ["napoli_jammo", "’Ncoppa jamme jà! 🎶", 22],
+    ["sofia_e_basta", "FUNICULÌ FUNICULÀ!! 🎶", 87],
+    ["marco.pitlane", "Pelle d’oca! Vai Kimi! 🥹", 25],
+    ["la_vespa_rosa", "Vai Kimi! 🇮🇹❤️", 151],
+    ["ultras_monza_12", "#12 ANDIAMOOO 🔥", 168],
+    ["chiara.dal.lago", "Forza Kimi!", 136],
+    ["pippo_palermo", "Kimi in cima al mondo! 🌋", 29],
+    ["ale_sim_racer", "GOAT 🐐 forza ragazzo", 84],
+    ["mamma_lucia_", "Vinci, tesoro! 🍝", 76],
+    ["silverstone_sam", "Straight to the top, lad! 🇬🇧", 133],
+    ["ellie.boxbox", "Absolute scenes 😭🙌", 148],
+    ["gaz_from_leeds", "Get in there!!! 🍺", 165],
+    ["priya.paddock", "Up the top! LET’S GO 🏁", 42],
+    ["tom_hughes_ldn", "Funiculì funiculà! 🎶😂", 31],
+    ["auntie_maureen_51", "Brilliant drive 👏", 67],
+    ["oranje_daan", "Naar de top, Kimi! 🧡", 3],
+    ["lotte.vd.berg", "Respect uit Oranje 🇳🇱👏", 44],
+    ["henk_zandvoort", "Lekker bezig! 🔥", 34],
+    ["sem.simracing", "Gaan met die banaan! 🍌", 1],
+    ["lucia_mad_f1", "¡A lo más alto! 🇪🇸", 36],
+    ["paco.asturias33", "Este chaval es un fenómeno 👏", 28],
+    ["carla_bcn", "¡Funiculí, funiculá! 😍", 122],
+    ["jordi.montmelo", "Endavant Kimi! 🔥", 162],
+    ["monegasque_maxime", "Allez Kimi ! 🇲🇨", 100],
+    ["chloe.portdemonaco", "Le sommet t’attend ✨", 92],
+    ["hugo_lemans", "Au sommet, Kimi !! 🇫🇷", 141],
+    ["mamie_odile", "Quel talent 😊", 130],
+    ["ines.f1fan", "On y va !! 🔥", 38],
+    ["lukas_nuerburg", "Ab nach oben, Kimi! 🇩🇪", 32],
+    ["silberpfeil_fan", "Silberpfeil an der Spitze 🏆", 177],
+    ["lena.schu", "Weiter so! 😍", 174],
+    ["spa_thomas", "Allez Kimi ! 🇧🇪", 21],
+    ["noor.vlaanderen", "Hup Kimi hup! 🎉", 47],
+    ["bergfex_tirol", "Auf zum Gipfel! ⛰️", 153],
+    ["anna.steiermark", "Auf geht’s! 💪", 97],
+    ["bence_hungaroring", "Hajrá Kimi! 🇭🇺", 2],
+    ["reka.bp", "Irány a csúcs! 🔝", 146],
+    ["mikko_rally", "Toinen Kimi 😎", 127],
+    ["aino.helsinki", "Mennään! 🇫🇮", 79],
+    ["kuba_wroclaw", "Na szczyt! 🇵🇱", 30],
+    ["baku_nigar", "Zirvəyə! 🇦🇿", 156],
+    ["austin_tx_racefan", "Yeehaw, let’s go! 🤠", 27],
+    ["jess.drivetosurvive", "mercedes girl now 😭💚", 74],
+    ["miami_gardens_dre", "TOP OF THE MOUNTAIN 🔥", 13],
+    ["vegas_linda", "3am in Vegas, worth it ☕", 89],
+    ["kev_ny_f1", "funiculì stuck in my head 🎶", 123],
+    ["maple_mathieu", "Go Kimi! Vas-y ! 🇨🇦", 155],
+    ["sarah_tdot", "Up the mountain, eh 🍁", 128],
+    ["ravi.calgary", "Calgary says GO! 💨", 20],
+    ["checo_y_kimi_mx", "¡Arriba, arriba! 🇲🇽", 120],
+    ["vale.cdmx", "¡Qué chido! 🔥", 171],
+    ["abuela_rosa_gdl", "Dios te bendiga, mijo 🙏", 71],
+    ["diego.autodromo", "¡Vamos Kimi! 🏁", 170],
+    ["bruno_interlagos", "VAMOOOO KIMI 🇧🇷", 138],
+    ["camila.sp", "kkkkkk que corrida 😭", 41],
+    ["seu_jorge_senna", "Ayrton estaria orgulhoso 💛💚", 17],
+    ["bia.bortoleto.fan", "Rumo ao topo! 🚀", 178],
+    ["thiago_rj", "Bora, moleque! 🏎️", 129],
+    ["dona_marta_poa", "Deus abençoe 🙏", 62],
+    ["colapinto_ultra", "¡Dale Kimi! 🇦🇷", 157],
+    ["flor.bsas", "Qué genio 😂🔥", 169],
+    ["el_tano_rosario", "Sangre italiana 🇮🇹🇦🇷", 125],
+    ["mica.cordoba", "Jajaja qué pibe 😍", 59],
+    ["juanpa_medellin", "¡Qué berraquera! 🇨🇴", 86],
+    ["cata.stgo", "Qué manera de manejar 😱", 139],
+    ["suzuka_ren", "キミ、頂点へ！🏆", 149],
+    ["haruka_f1_love", "鈴鹿でまた〜💚", 85],
+    ["tanaka.motorsport", "すごすぎwww", 78],
+    ["yuki_obaachan", "がんばれ！🍵", 66],
+    ["kenta_wake_up", "午前3時😭", 10],
+    ["xiaolong_sh_f1", "Kimi加油！🔥", 112],
+    ["meimei.f1", "太帅了😍", 103],
+    ["laowang_beijing", "登顶！🏔️", 159],
+    ["lin.taipei.racing", "衝啊！基米！", 55],
+    ["weiming.sg", "Steady lah! 🇸🇬", 137],
+    ["nur.aisyah.sg", "Shiok sia! 🌃", 117],
+    ["tonkla_bkk", "สุดยอด!! 555", 152],
+    ["ploy.albonfan", "ไปเลย! 💙", 83],
+    ["minjun_seoul", "키미 가자!!! ㅋㅋㅋ", 7],
+    ["jiwoo.racing", "정상까지 가즈아~! 🔝", 119],
+    ["arjun_mumbai_f1", "Kimi bhai! 🔥🇮🇳", 147],
+    ["ananya.blr", "Top pe jaao! 🚀", 126],
+    ["migs.manila", "Lezgooo! Petmalu 🔥", 135],
+    ["ali.sakhir", "يلا كيمي! 🔥", 111],
+    ["fatima_bh_f1", "Yalla, to the top 💚", 81],
+    ["faisal.jeddah", "ما شاء الله 👏", 26],
+    ["reem.riyadh", "إلى القمة! 🏆", 105],
+    ["omar_yasmarina", "Yalla habibi! 🇦🇪", 150],
+    ["sana.dubai", "Watching from Dubai 😍", 49],
+    ["hamad_lusail", "يلا يا بطل! 🇶🇦", 175],
+    ["bazza_melb", "Onya mate!! 🇦🇺", 102],
+    ["jess.oscar.fan", "This kid’s a weapon 🔥", 37],
+    ["kai_bondi", "4am in Sydney 😭", 77],
+    ["nan_shirl_perth", "Go get ’em 💛", 70],
+    ["tama_auckland", "Kia kaha, Kimi! 🇳🇿", 106],
+    ["ella.chch", "Sweet as! Up the top 🙌", 163],
+    ["thabo_joburg", "Sharp sharp Kimi! 🇿🇦", 161]
+  ];
+
+  const commentList = document.getElementById("comments");
+  const heartLayer = document.getElementById("hearts");
+  addEventListener("load", () => COMMENTS.forEach(c => { new Image().src = `assets/avatars/${c[2]}.jpg`; }));
+
+  let order = [], next = 0, commentTimer = 0, heartTimer = 0;
+  function addComment() {
+    const [user, text, frame] = COMMENTS[order[next++ % order.length]];
+    const li = document.createElement("li");
+    const img = document.createElement("img");
+    img.src = `assets/avatars/${frame}.jpg`; img.alt = "";
+    const p = document.createElement("p");
+    const b = document.createElement("b");
+    b.textContent = user;
+    p.append(b, text);
+    li.append(img, p);
+    commentList.append(li);
+    // The list is anchored at the bottom: slide it up by the new row's height.
+    const ease = "cubic-bezier(.2,.8,.2,1)";
+    commentList.animate([{ transform: `translateY(${li.offsetHeight}px)` }, { transform: "none" }], { duration: 380, easing: ease });
+    li.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 380, easing: ease });
+    while (commentList.children.length > 9) commentList.firstElementChild.remove();
+    commentTimer = setTimeout(addComment, 650 + Math.random() * 750);
+  }
+
+  const RAINBOW = ["#ff3b5c", "#ff8a3d", "#ffd23f", "#5fe07a", "#3fc4ff", "#4f7bff", "#9b6bff", "#ff6fcf"];
+  const HEART = "M12 21.4C5.4 16 0 11.5 0 6.6 0 2.9 2.9 0 6.5 0c2.2 0 4.2 1.1 5.5 2.8C13.3 1.1 15.3 0 17.5 0 21.1 0 24 2.9 24 6.6c0 4.9-5.4 9.4-12 14.8z";
+  // One heart: starts small on the like button (428, 798), drifts up the right side with a sway, fades out.
+  function floatHeart() {
+    const size = 20 + Math.random() * 18;
+    const color = RAINBOW[Math.floor(Math.random() * RAINBOW.length)];
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 22");
+    svg.setAttribute("width", size); svg.setAttribute("height", size * 22 / 24);
+    svg.innerHTML = `<path d="${HEART}" fill="${color}" stroke="rgba(255,255,255,.45)" stroke-width="1.2"/>`;
+    heartLayer.append(svg);
+
+    const x0 = 428 - size / 2, y0 = 790 - size / 2;
+    const rise = 360 + Math.random() * 160;
+    const drift = 20 + Math.random() * 40;
+    const sway = 8 + Math.random() * 12, phase = Math.random() * 6.28;
+    const frames = [];
+    for (let i = 0; i <= 10; i++) {
+      const t = i / 10;
+      const x = x0 + drift * t + sway * Math.sin(phase + t * 7);
+      const y = y0 - rise * (1 - Math.pow(1 - t, 1.4));
+      const s = t < 0.12 ? 0.3 + 0.7 * (t / 0.12) : 1;
+      const o = t < 0.1 ? t / 0.1 : t > 0.7 ? (1 - t) / 0.3 : 1;
+      frames.push({ transform: `translate(${x}px, ${y}px) scale(${s})`, opacity: o * 0.92 });
+    }
+    svg.animate(frames, { duration: 2600 + Math.random() * 1400, easing: "linear" }).onfinish = () => svg.remove();
+  }
+  function heartStream() {
+    floatHeart();
+    heartTimer = setTimeout(heartStream, 160 + Math.random() * 260);
+  }
+
+  function startReactions() {
+    stopReactions();
+    order = COMMENTS.map((_, i) => i).sort(() => Math.random() - 0.5);
+    next = 0;
+    commentTimer = setTimeout(addComment, 700);
+    heartTimer = setTimeout(heartStream, 500);
+  }
+  function stopReactions() {
+    clearTimeout(commentTimer); clearTimeout(heartTimer);
+    commentList.replaceChildren();
+    heartLayer.replaceChildren();
+  }
+
   // The device's status bar takes the screen's background colour.
   const themeMeta = document.querySelector('meta[name="theme-color"]');
   function showStory() {
@@ -297,9 +493,11 @@
     story.hidden = false;
     document.body.classList.add("on-story");
     requestAnimationFrame(() => requestAnimationFrame(() => story.classList.add("play")));
+    startReactions();
   }
   function showPost() {
     themeMeta.content = "#000000";
+    stopReactions();
     story.hidden = true;
     story.classList.remove("play");
     post.hidden = false;
@@ -311,7 +509,10 @@
   send.addEventListener("pointerdown", e => e.preventDefault());   // don't drop the keyboard before the tap lands
   send.addEventListener("click", showStory);
   document.getElementById("close").addEventListener("click", showPost);
-  heart.addEventListener("click", () => heart.classList.toggle("on"));
+  heart.addEventListener("click", () => {
+    heart.classList.toggle("on");
+    for (let i = 0; i < 6; i++) setTimeout(floatHeart, i * 70);   // a burst on every tap
+  });
   addEventListener("keydown", e => { if (e.key === "Escape" && !story.hidden) showPost(); });
 
   if (q.get("screen") === "story") showStory();
