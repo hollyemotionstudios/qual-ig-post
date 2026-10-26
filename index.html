@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no, interactive-widget=resizes-visual">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Post</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400&family=Inter:wght@400;500&family=Nunito:wght@400&display=swap" rel="stylesheet">
+<style>
+  /* Built from Figma file jO4VrQnb9mAVd7SkmDKv9Y, frames "IG Posting 1" (2165:56), "IG Posting 2" (7:1308)
+     and "Sharing the post with others" (9:3013), all 523×847. Everything below is in Figma px;
+     JS scales the whole stage to fit the screen. */
+  :root {
+    --black: #000;
+    --story-bg: #141112;
+    --box: #252528;
+    --blue: #2695e9;
+    --like: #ff3040;
+    --sans: Aptos, "Albert Sans", system-ui, sans-serif;
+    --ui: Inter, system-ui, sans-serif;
+    --ease: cubic-bezier(.2, .8, .2, 1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%; overflow: hidden; overscroll-behavior: none;
+    background: var(--black); color: #fff;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none; user-select: none;
+    touch-action: manipulation;
+    transition: background-color .3s;
+  }
+  body { position: fixed; inset: 0; }
+  body.on-story { background: var(--story-bg); }
+  img { display: block; pointer-events: none; -webkit-user-drag: none; }
+  button { all: unset; cursor: pointer; display: grid; place-items: center; }
+
+  #stage {
+    position: absolute; left: 0; top: 0;
+    width: 523px; height: 847px;
+    transform-origin: 0 0;
+  }
+  .screen {
+    position: absolute; inset: 0;
+    transition: opacity .32s var(--ease), transform .32s var(--ease);
+  }
+  .screen[hidden] { display: block; opacity: 0; pointer-events: none; transform: scale(.97); }
+
+  /* ---------- post (IG Posting 1 / 2) ---------- */
+  #post { background: var(--black); }
+  .user {
+    position: absolute; display: flex; align-items: center; gap: 10px;
+    font: 400 12px/1 var(--ui); white-space: nowrap;
+  }
+  .user .av { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+  .user .when { color: rgba(255,255,255,.6); margin-left: 2px; }
+  #post .user { left: 40px; top: 27px; }
+
+  .col {
+    position: absolute; left: 22px; top: 76px; width: 476px; bottom: 0;
+    display: flex; flex-direction: column;
+  }
+  .photo {
+    flex: 1 1 auto; min-height: 0; border-radius: 24px; overflow: hidden; background: #111;
+  }
+  .photo img {
+    width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%;
+    transition: object-position .34s var(--ease);
+  }
+  .gap { flex: none; height: 38px; transition: height .34s var(--ease); }
+  .box {
+    flex: none; position: relative; margin: 0 -4px;
+    min-height: 117px; padding: 20px 64px 19px 20px;
+    background: var(--box); border-radius: 24px; cursor: text;
+  }
+  .box textarea {
+    display: block; width: 100%; resize: none; border: 0; outline: 0; background: transparent;
+    color: #fff; caret-color: var(--blue);
+    font: 400 26px/39px var(--sans); letter-spacing: 0;
+    height: 78px; max-height: 156px; overflow-y: auto; scrollbar-width: none;
+    -webkit-user-select: text; user-select: text;
+  }
+  .box textarea::-webkit-scrollbar { display: none; }
+  .send {
+    position: absolute; right: 14px; bottom: 22px; width: 48px; height: 48px; border-radius: 50%;
+    transition: transform .15s;
+  }
+  .send:active { transform: scale(.88); }
+  .send svg { width: 24.4px; height: 24.4px; }
+  .spacer { flex: none; height: 36px; transition: height .34s var(--ease); }
+
+  .kb {
+    position: absolute; left: 8px; top: 498px; width: 507px; height: 337px;
+    object-fit: fill; opacity: 0; transform: translateY(60px);
+    transition: opacity .25s, transform .34s var(--ease);
+  }
+
+  #post.editing .gap { height: 24px; }
+  #post.editing .spacer { height: 359px; }
+  #post.editing .photo img { object-position: 50% 18%; }
+  #post.editing.show-kb .kb { opacity: 1; transform: none; }
+
+  /* ---------- story (Sharing the post with others) ---------- */
+  #story { background: var(--story-bg); }
+  .status { position: absolute; inset: 0 0 auto 0; height: 40px; }
+  .status .time { position: absolute; left: 22px; top: 13px; font: 400 15px/20px Nunito, var(--ui); }
+  .status svg { position: absolute; }
+  body.no-status .status { display: none; }
+
+  .frame {
+    position: absolute; left: 16px; top: 55px; width: 492px; height: 694px;
+    border-radius: 24px; overflow: hidden; background: #111;
+  }
+  .frame img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; }
+  .frame::after {
+    content: ""; position: absolute; inset: 0 0 auto 0; height: 110px;
+    background: linear-gradient(rgba(0,0,0,.28), rgba(0,0,0,0));
+  }
+  .bars { position: absolute; left: 40px; top: 61px; width: 450px; height: 2px; display: flex; gap: 6px; z-index: 1; }
+  .bars span { flex: 1; border-radius: 1px; background: rgba(255,255,255,.35); overflow: hidden; }
+  .bars i { display: block; height: 100%; width: 0; background: #fff; }
+  #story.play .bars span:first-child i { width: 100%; transition: width var(--story-time, 6s) linear; }
+
+  #story .user { left: 36px; top: 75px; z-index: 1; }
+  .more { position: absolute; left: 420px; top: 80px; width: 24px; height: 24px; z-index: 1; }
+  .close { position: absolute; left: 446px; top: 70px; width: 44px; height: 44px; z-index: 1; }
+  .close svg { width: 20px; height: 20px; }
+
+  .reply {
+    position: absolute; left: 28px; top: 778px; width: 372px; height: 40px;
+    border: 1px solid rgba(255,255,255,.55); border-radius: 20px;
+    padding-left: 17px; display: flex; align-items: center;
+    font: 400 16px/1 var(--ui);
+  }
+  .heart { position: absolute; left: 406px; top: 776px; width: 44px; height: 44px; }
+  .heart svg { width: 22.5px; height: 20px; overflow: visible; }
+  .heart path { transition: fill .15s, stroke .15s; }
+  .heart.on path { fill: var(--like); stroke: var(--like); }
+  .heart.on svg { animation: pop .35s var(--ease); }
+  @keyframes pop { 40% { transform: scale(1.3); } }
+  .share { position: absolute; left: 445px; top: 781px; width: 44px; height: 44px; }
+  .share svg { width: 21.9px; height: 19.4px; overflow: visible; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <section id="post" class="screen">
+    <div class="user">
+      <img class="av" src="assets/avatar.jpg" alt="">
+      <span>Kimiantonelli <span class="when">18h</span></span>
+    </div>
+    <div class="col">
+      <div class="photo"><img src="assets/photo.jpg" alt=""></div>
+      <div class="gap"></div>
+      <div class="box" id="box">
+        <textarea id="caption" rows="2" spellcheck="false" autocomplete="off" autocorrect="off"
+                  autocapitalize="sentences" enterkeyhint="enter" aria-label="Caption"></textarea>
+        <button class="send" id="send" aria-label="Share">
+          <svg viewBox="0 0 24.4424 24.4374" fill="none"><path d="M24.0725 0.915063C23.4846 0.0452297 22.3059 -0.25227 21.1159 0.230813L1.75433 8.36248C0.635167 8.8229 -0.020749 9.56806 0.00050096 10.3557C0.013251 10.7821 0.235668 11.567 1.60983 12.0444L8.57275 14.3691L14.5454 8.39648C14.9591 7.9814 15.632 7.9814 16.0471 8.39648C16.4622 8.81156 16.4622 9.48448 16.0471 9.89956L10.0758 15.8722L12.4091 22.8281C12.9078 24.2801 13.7776 24.4374 14.1289 24.4374C14.9109 24.4374 15.6235 23.7999 16.0811 22.6892L24.2099 3.31348C24.5627 2.44223 24.5117 1.56815 24.0725 0.915063Z" fill="#2695E9"/></svg>
+        </button>
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <!-- Figma's keyboard picture: shown while typing only on screens without a touch keyboard (see ?kb=) -->
+    <img class="kb" src="assets/keyboard.png" alt="">
+  </section>
+
+  <section id="story" class="screen" hidden>
+    <div class="frame"><img src="assets/photo.jpg" alt=""></div>
+    <div class="status">
+      <span class="time">9:41</span>
+      <svg style="left:432px;top:20px" width="17.77" height="11.15" viewBox="0 0 17.7705 11.1504"><path d="M2.09082 6.96875C2.66814 6.96875 3.13574 7.43733 3.13574 8.01465V10.1055C3.13556 10.6826 2.66803 11.1504 2.09082 11.1504H1.0459C0.468691 11.1504 0.000185727 10.6826 0 10.1055V8.01465C0 7.43733 0.468577 6.96875 1.0459 6.96875H2.09082ZM6.96875 4.87891C7.54607 4.87891 8.01465 5.34651 8.01465 5.92383V10.1055C8.01446 10.6826 7.54596 11.1504 6.96875 11.1504H5.92383C5.34662 11.1504 4.87909 10.6826 4.87891 10.1055V5.92383C4.87891 5.34651 5.34651 4.87891 5.92383 4.87891H6.96875ZM11.8477 2.43945C12.4247 2.4397 12.8924 2.90732 12.8926 3.48438V10.1055C12.8924 10.6825 12.4246 11.1501 11.8477 11.1504H10.8018C10.2246 11.1503 9.75704 10.6826 9.75684 10.1055V3.48438C9.75698 2.90721 10.2246 2.43952 10.8018 2.43945H11.8477ZM16.7256 0C17.3029 3.82592e-05 17.7705 0.4686 17.7705 1.0459V10.1055C17.7703 10.6826 17.3028 11.1504 16.7256 11.1504H15.6807C15.1035 11.1504 14.635 10.6826 14.6348 10.1055V1.0459C14.6348 0.468577 15.1033 0 15.6807 0H16.7256Z" fill="#fff"/></svg>
+      <svg style="left:455px;top:19px" width="16.03" height="11.5" viewBox="0 0 16.0293 11.4982"><path d="M5.6963 8.80873C7.03498 7.67742 8.99528 7.67748 10.334 8.80873C10.4013 8.86957 10.4405 8.95534 10.4424 9.04603C10.4442 9.13674 10.4086 9.22467 10.3438 9.28822L8.24805 11.4015C8.1867 11.4635 8.1029 11.4981 8.01563 11.4982C7.92822 11.4982 7.84368 11.4636 7.78223 11.4015L5.68555 9.28822C5.62081 9.22463 5.58598 9.13672 5.5879 9.04603C5.58982 8.95532 5.6289 8.86953 5.6963 8.80873ZM2.89844 5.98841C5.78261 3.30792 10.2496 3.30801 13.1338 5.98841C13.1989 6.05127 13.2364 6.13819 13.2373 6.22865C13.2382 6.31898 13.2024 6.40574 13.1387 6.46986L11.9268 7.69349C11.8019 7.81841 11.5998 7.82097 11.4717 7.69935C10.5246 6.84259 9.29228 6.36822 8.01466 6.3683C6.73795 6.36892 5.50696 6.84316 4.56055 7.69935C4.43245 7.82097 4.23035 7.81842 4.10548 7.69349L2.89454 6.46986C2.8306 6.40579 2.79506 6.31912 2.79591 6.22865C2.79676 6.13816 2.83329 6.05127 2.89844 5.98841ZM0.10157 3.17689C4.52529 -1.059 11.504 -1.05893 15.9277 3.17689C15.9917 3.23978 16.0287 3.32549 16.0293 3.41517C16.0298 3.50491 15.994 3.59173 15.9307 3.65541L14.7178 4.87806C14.5928 5.0036 14.3896 5.00557 14.2627 4.88197C12.5773 3.28095 10.3402 2.38793 8.01466 2.38783C5.689 2.38794 3.45216 3.28094 1.76661 4.88197C1.63976 5.00567 1.43642 5.00376 1.31153 4.87806L0.09864 3.65541C0.0353924 3.59169 -0.000583735 3.50491 7.16636e-06 3.41517C0.000621905 3.32546 0.03751 3.23975 0.10157 3.17689Z" fill="#fff"/></svg>
+      <svg style="left:477px;top:19px" width="24.74" height="11.85" viewBox="0 0 24.7397 11.8471" fill="none"><rect opacity=".35" x=".5" y=".5" width="22" height="10.85" rx="2.17" stroke="#fff"/><path opacity=".4" d="M23.6944 3.83291V8.01424C24.3278 7.66011 24.7397 6.83629 24.7397 5.92358C24.7397 5.01086 24.3278 4.18704 23.6944 3.83291" fill="#fff"/><rect x="2.09" y="2.09" width="18.82" height="7.67" rx="1.33" fill="#fff"/></svg>
+    </div>
+    <div class="bars"><span><i></i></span><span><i></i></span></div>
+    <div class="user">
+      <img class="av" src="assets/avatar.jpg" alt="">
+      <span>Kimiantonelli <span class="when">18h</span></span>
+    </div>
+    <div class="more"><svg style="position:absolute;left:5px;top:10.5px" width="14" height="3" viewBox="0 0 14 3"><circle cx="1.5" cy="1.5" r="1.5" fill="#fff"/><circle cx="7" cy="1.5" r="1.5" fill="#fff"/><circle cx="12.5" cy="1.5" r="1.5" fill="#fff"/></svg></div>
+    <button class="close" id="close" aria-label="Close">
+      <svg viewBox="0 0 20 20" fill="none"><path d="M1 1L19 19M19 1L1 19" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+    <div class="reply">Send message</div>
+    <button class="heart" id="heart" aria-label="Like">
+      <svg viewBox="0 0 22.4996 20.0004" fill="none"><path d="M13.002 2.42676C14.8649 0.732937 17.2779 0.459446 19.0996 1.55469C21.0143 2.70675 22.0205 5.17248 21.4326 7.53906V7.54004C20.8747 9.78771 19.5094 11.6029 17.8506 13.3975C15.8957 15.5122 13.6309 17.2977 11.2539 19.0283C8.20074 16.7958 5.32529 14.5207 3.12109 11.5801L2.67676 10.9648L2.30469 10.4072C1.47642 9.10259 0.930513 7.76852 0.901367 6.28809C0.858732 4.12604 2.0417 2.18801 3.76465 1.35742L3.93262 1.28027C5.74193 0.499061 8.00088 0.953862 9.6416 2.56152C9.96337 2.877 10.2943 3.19503 10.6641 3.55371L11.3145 4.18359L11.9404 3.53027C12.2561 3.20101 12.4912 2.93051 12.7422 2.67676L13.002 2.42676Z" stroke="#fff" stroke-width="1.8"/></svg>
+    </button>
+    <div class="share">
+      <svg viewBox="0 0 21.9083 19.3525" fill="none"><path d="M10.0562 16.1787L1.51128 18.1562L10.0542 3.3584L10.0562 16.1787ZM20.397 18.1562L11.856 16.1787L11.854 3.36035L20.397 18.1562Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" transform="rotate(60 10.95 10.76)"/></svg>
+    </div>
+  </section>
+
+</div>
+<script>
+  // URL options: ?text=…  replaces the default caption
+  //              ?kb=1 / ?kb=0  force the Figma keyboard picture on / off while typing (default: on only without touch)
+  //              ?status=0  hides the fake status bar on the shared screen
+  //              ?story=6  seconds for the story progress bar
+  //              ?screen=story  opens straight on the shared screen
+  const DEFAULT_TEXT = "Jamme. Jamme.\nLet’s go to the top";
+
+  const q = new URLSearchParams(location.search);
+  const startText = q.has("text") ? q.get("text") : DEFAULT_TEXT;
+  const showKb = q.has("kb") ? q.get("kb") === "1" : !matchMedia("(pointer: coarse)").matches;
+  if (q.get("status") === "0") document.body.classList.add("no-status");
+  if (q.has("story")) document.documentElement.style.setProperty("--story-time", (+q.get("story") || 6) + "s");
+
+  const stage = document.getElementById("stage");
+  const post = document.getElementById("post");
+  const story = document.getElementById("story");
+  const box = document.getElementById("box");
+  const caption = document.getElementById("caption");
+  const heart = document.getElementById("heart");
+  post.classList.toggle("show-kb", showKb);
+
+  // Scale the 523×847 design to fit. While typing, the on-screen keyboard shrinks the viewport,
+  // so the scale is frozen until editing ends.
+  let editing = false;
+  function fit() {
+    if (editing) return;
+    const W = innerWidth, H = innerHeight;
+    const u = Math.min(W / 523, H / 847);
+    const x = (W - 523 * u) / 2, y = (H - 847 * u) / 2;
+    stage.style.transform = `translate(${x}px, ${y}px) scale(${u})`;
+  }
+  addEventListener("resize", fit);
+  fit();
+
+  // Caption: grows to 4 lines, then scrolls.
+  function sizeCaption() {
+    caption.style.height = "auto";
+    caption.style.height = Math.min(Math.max(caption.scrollHeight, 78), 156) + "px";
+  }
+  function setText(t) { caption.value = t; sizeCaption(); }
+  caption.addEventListener("input", sizeCaption);
+  setText(startText);
+
+  caption.addEventListener("focus", () => {
+    editing = true;
+    post.classList.add("editing");
+    scrollTo(0, 0);
+  });
+  caption.addEventListener("blur", () => {
+    editing = false;
+    post.classList.remove("editing");
+    scrollTo(0, 0);
+    fit();
+  });
+  // Keep the page pinned when the keyboard opens.
+  if (window.visualViewport) visualViewport.addEventListener("resize", () => scrollTo(0, 0));
+
+  // Tapping anywhere on the grey box starts typing, caret at the end.
+  box.addEventListener("pointerdown", e => {
+    if (e.target === caption || e.target.closest(".send")) return;
+    e.preventDefault();
+    caption.focus({ preventScroll: true });
+    const n = caption.value.length;
+    caption.setSelectionRange(n, n);
+  });
+  // Tapping outside the box while typing closes the keyboard.
+  post.addEventListener("pointerdown", e => {
+    if (editing && !e.target.closest(".box")) caption.blur();
+  });
+
+  function showStory() {
+    caption.blur();
+    heart.classList.remove("on");
+    story.classList.remove("play");
+    post.hidden = true;
+    story.hidden = false;
+    document.body.classList.add("on-story");
+    requestAnimationFrame(() => requestAnimationFrame(() => story.classList.add("play")));
+  }
+  function showPost() {
+    story.hidden = true;
+    story.classList.remove("play");
+    post.hidden = false;
+    document.body.classList.remove("on-story");
+    setText(startText);   // fresh caption for the next take
+  }
+
+  const send = document.getElementById("send");
+  send.addEventListener("pointerdown", e => e.preventDefault());   // don't drop the keyboard before the tap lands
+  send.addEventListener("click", showStory);
+  document.getElementById("close").addEventListener("click", showPost);
+  heart.addEventListener("click", () => heart.classList.toggle("on"));
+  addEventListener("keydown", e => { if (e.key === "Escape" && !story.hidden) showPost(); });
+
+  if (q.get("screen") === "story") showStory();
+</script>
+</body>
+</html>

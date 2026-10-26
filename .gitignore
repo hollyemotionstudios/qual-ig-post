@@ -1,0 +1,5 @@
+figma-raw/
+.DS_Store
+.claude/
+.vercel
+.env*
