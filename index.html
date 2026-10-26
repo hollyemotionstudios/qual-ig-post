@@ -141,15 +141,15 @@
   .share { position: absolute; left: 445px; top: 781px; width: 44px; height: 44px; }
   .share svg { width: 21.9px; height: 19.4px; overflow: visible; }
   /* ---------- live reactions on the story ---------- */
-  /* Comments rise up the lower part of the photo, newest at the bottom, fading out at the top. */
+  /* Comments rise up the lower part of the photo, newest at the bottom: 3 rows show, a 4th fades out at the top. */
   .shade {
     position: absolute; inset: auto 0 0 0; height: 330px;
     background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.45));
   }
   .comments {
-    position: absolute; left: 30px; top: 445px; width: 350px; height: 292px; z-index: 1;
+    position: absolute; left: 30px; top: 521px; width: 350px; height: 216px; z-index: 1;
     overflow: hidden; pointer-events: none;
-    -webkit-mask-image: linear-gradient(transparent, #000 90px); mask-image: linear-gradient(transparent, #000 90px);
+    -webkit-mask-image: linear-gradient(transparent, #000 54px); mask-image: linear-gradient(transparent, #000 54px);
   }
   .comments ol { position: absolute; left: 0; right: 0; bottom: 0; margin: 0; padding: 0; list-style: none; }
   .comments li { display: flex; align-items: center; gap: 12px; padding-top: 14px; }
@@ -159,12 +159,12 @@
 
   /* The typed caption as a story text sticker: black on white, each line on its own rounded block. */
   .story-caption {
-    position: absolute; left: 62px; top: 400px; width: 400px; z-index: 1;
-    transform: translateY(-50%); text-align: center; pointer-events: none;
+    position: absolute; left: 32px; top: 452px; width: 460px; z-index: 1;
+    transform: translateY(-50%); text-align: center; text-wrap: balance; pointer-events: none;
   }
   .story-caption span {
-    background: #fff; color: #000; font: 600 22px/1.45 var(--ui);
-    padding: 3px 10px; border-radius: 8px; white-space: pre-wrap; overflow-wrap: anywhere;
+    background: #fff; color: #000; font: 600 28px/1.45 var(--ui);
+    padding: 4px 12px; border-radius: 8px; white-space: pre-wrap; overflow-wrap: anywhere;
     -webkit-box-decoration-break: clone; box-decoration-break: clone;
   }
 
@@ -225,7 +225,7 @@
   //              ?story=6  seconds for the story progress bar
   //              ?screen=story  opens straight on the shared screen
   const DEFAULT_TEXT = "";
-  const STORY_DEFAULT = "Jamme jamme, let’s go to the top!";   // shown on the story when no caption was typed
+  const STORY_DEFAULT = "Jamme jamme, let's go to the top!";   // shown on the story when no caption was typed
 
   const q = new URLSearchParams(location.search);
   const startText = q.has("text") ? q.get("text") : DEFAULT_TEXT;
@@ -446,7 +446,7 @@
     const ease = "cubic-bezier(.2,.8,.2,1)";
     commentList.animate([{ transform: `translateY(${li.offsetHeight}px)` }, { transform: "none" }], { duration: 380, easing: ease });
     li.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 380, easing: ease });
-    while (commentList.children.length > 9) commentList.firstElementChild.remove();
+    while (commentList.children.length > 6) commentList.firstElementChild.remove();
     commentTimer = setTimeout(addComment, 650 + Math.random() * 750);
   }
 
