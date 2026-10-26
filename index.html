@@ -96,16 +96,10 @@
   .send svg { width: 24.4px; height: 24.4px; }
   .spacer { flex: none; height: 36px; transition: height .34s var(--ease); }
 
-  .kb {
-    position: absolute; left: 8px; top: 498px; width: 507px; height: 337px;
-    object-fit: fill; opacity: 0; transform: translateY(60px);
-    transition: opacity .25s, transform .34s var(--ease);
-  }
-
   #post.editing .gap { height: 24px; }
+  /* Until the real keyboard is measured, assume the Figma "IG Posting 2" space (359px); see keyboardSpace() */
   #post.editing .spacer { height: 359px; }
   #post.editing .photo img { object-position: 50% 18%; }
-  #post.editing.show-kb .kb { opacity: 1; transform: none; }
 
   /* ---------- story (Sharing the post with others) ---------- */
   /* The strip above the photo (0–55px) is left empty for the device's own status bar. */
@@ -168,8 +162,6 @@
       </div>
       <div class="spacer"></div>
     </div>
-    <!-- Figma's keyboard picture: shown while typing only on screens without a touch keyboard (see ?kb=) -->
-    <img class="kb" src="assets/keyboard.png" alt="">
   </section>
 
   <section id="story" class="screen" hidden>
@@ -195,14 +187,12 @@
 </div>
 <script>
   // URL options: ?text=…  replaces the default caption
-  //              ?kb=1 / ?kb=0  force the Figma keyboard picture on / off while typing (default: on only without touch)
   //              ?story=6  seconds for the story progress bar
   //              ?screen=story  opens straight on the shared screen
   const DEFAULT_TEXT = "Jamme. Jamme.\nLet’s go to the top";
 
   const q = new URLSearchParams(location.search);
   const startText = q.has("text") ? q.get("text") : DEFAULT_TEXT;
-  const showKb = q.has("kb") ? q.get("kb") === "1" : !matchMedia("(pointer: coarse)").matches;
   if (q.has("story")) document.documentElement.style.setProperty("--story-time", (+q.get("story") || 6) + "s");
 
   const stage = document.getElementById("stage");
@@ -211,7 +201,7 @@
   const box = document.getElementById("box");
   const caption = document.getElementById("caption");
   const heart = document.getElementById("heart");
-  post.classList.toggle("show-kb", showKb);
+  const spacer = post.querySelector(".spacer");
 
   // Scale the 523×847 design to fit. While typing, the on-screen keyboard shrinks the viewport,
   // so the scale is frozen until editing ends.
@@ -220,6 +210,7 @@
   // then holds the bar.
   const insetEl = document.getElementById("inset");
   let editing = false;
+  let scale = 1, stageY = 0;
   function fit() {
     if (editing) return;
     const W = innerWidth, H = innerHeight;
@@ -228,6 +219,7 @@
     const x = (W - 523 * u) / 2;
     const y = Math.max((H - 847 * u) / 2, top - 27 * u);
     stage.style.transform = `translate(${x}px, ${y}px) scale(${u})`;
+    scale = u; stageY = y;
   }
   addEventListener("resize", fit);
   fit();
@@ -241,19 +233,44 @@
   caption.addEventListener("input", sizeCaption);
   setText(startText);
 
+  // The device's own keyboard: the page measures where it starts (visual viewport bottom) and sits
+  // the caption box 12px above it; the photo takes whatever height is left.
+  let keyboardSeen = false;
+  function keyboardSpace(visibleBottom) {
+    if (!editing) return;
+    const kb = innerHeight - visibleBottom;
+    if (kb > 80) {
+      keyboardSeen = true;
+      const below = (stageY + 847 * scale - visibleBottom) / scale;   // stage px hidden by the keyboard
+      spacer.style.height = Math.max(36, below + 12) + "px";
+    } else if (keyboardSeen) {
+      caption.blur();   // keyboard closed with the back gesture: back to the resting post
+    }
+  }
+  function onViewport() {
+    scrollTo(0, 0);   // keep the page pinned
+    const vv = window.visualViewport;
+    if (vv) keyboardSpace(vv.offsetTop + vv.height);
+  }
+  if (window.visualViewport) {
+    visualViewport.addEventListener("resize", onViewport);
+    visualViewport.addEventListener("scroll", onViewport);
+  }
+
   caption.addEventListener("focus", () => {
     editing = true;
+    keyboardSeen = false;
     post.classList.add("editing");
-    scrollTo(0, 0);
+    onViewport();
   });
   caption.addEventListener("blur", () => {
     editing = false;
+    keyboardSeen = false;
+    spacer.style.height = "";
     post.classList.remove("editing");
     scrollTo(0, 0);
     fit();
   });
-  // Keep the page pinned when the keyboard opens.
-  if (window.visualViewport) visualViewport.addEventListener("resize", () => scrollTo(0, 0));
 
   // Tapping anywhere on the grey box starts typing, caret at the end.
   box.addEventListener("pointerdown", e => {
