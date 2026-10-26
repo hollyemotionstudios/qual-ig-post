@@ -14,6 +14,8 @@ Comments come from the "Export" tab of the comments sheet
 frame, copied into `COMMENTS` in index.html. Each avatar is the frame's photo from the "Avatars" tab, cropped square to
 88px as `assets/avatars/<frame>.jpg`.
 
+Hidden button: tapping the username at the top of the post fills the caption with "Jamme jamme, let's go to the top!".
+
 URL options:
 - `?text=...` pre-fills the caption (it starts empty)
 - `?story=6` sets the seconds for the story progress bar

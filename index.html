@@ -61,7 +61,7 @@
   }
   .user .av { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
   .user .when { color: rgba(255,255,255,.6); margin-left: 2px; }
-  #post .user { left: 40px; top: 27px; }
+  #post .user { left: 40px; top: 27px; padding: 10px; margin: -10px; }   /* hidden button: fills the caption */
 
   .col {
     position: absolute; left: 22px; top: 76px; width: 476px; bottom: 0;
@@ -315,6 +315,13 @@
     caption.focus({ preventScroll: true });
     const n = caption.value.length;
     caption.setSelectionRange(n, n);
+  });
+  // Hidden button: tapping the username fills in the caption (keeps the keyboard if it's open).
+  post.querySelector(".user").addEventListener("pointerdown", e => {
+    e.preventDefault();
+    e.stopPropagation();
+    setText(STORY_DEFAULT);
+    if (editing) caption.setSelectionRange(caption.value.length, caption.value.length);
   });
   // Tapping outside the box while typing closes the keyboard.
   post.addEventListener("pointerdown", e => {
