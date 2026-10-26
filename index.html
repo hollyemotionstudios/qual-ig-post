@@ -446,7 +446,7 @@
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("viewBox", "0 0 24 22");
     svg.setAttribute("width", size); svg.setAttribute("height", size * 22 / 24);
-    svg.innerHTML = `<path d="${HEART}" fill="${color}" stroke="rgba(255,255,255,.45)" stroke-width="1.2"/>`;
+    svg.innerHTML = `<path d="${HEART}" fill="${color}"/>`;
     heartLayer.append(svg);
 
     const x0 = 428 - size / 2, y0 = 790 - size / 2;
