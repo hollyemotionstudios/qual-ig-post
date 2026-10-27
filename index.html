@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400&family=Inter:wght@400;500&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 <style>
   /* Built from Figma file jO4VrQnb9mAVd7SkmDKv9Y, frames "IG Posting 1" (2165:56), "IG Posting 2" (7:1308)
      and "Sharing the post with others" (9:3013), all 523×847. Everything below is in Figma px;
@@ -24,8 +24,9 @@
     --box: #252528;
     --blue: #2695e9;
     --like: #ff3040;
-    --sans: Aptos, "Albert Sans", system-ui, sans-serif;
-    --ui: Inter, system-ui, sans-serif;
+    /* Emoji in any text (comments, caption) use Google's Noto Color Emoji (OFL, commercial-safe), not the device's own. */
+    --sans: Aptos, "Albert Sans", "Noto Color Emoji", system-ui, sans-serif;
+    --ui: Inter, "Noto Color Emoji", system-ui, sans-serif;
     --ease: cubic-bezier(.2, .8, .2, 1);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -468,6 +469,8 @@
   const commentList = document.getElementById("comments");
   const heartLayer = document.getElementById("hearts");
   addEventListener("load", () => COMMENTS.forEach(c => { new Image().src = `assets/avatars/${c[2]}.jpg`; }));
+  // Fetch the Noto emoji the comments use up front, so none flash in the device's emoji style first.
+  if (document.fonts) document.fonts.load('15px "Noto Color Emoji"', COMMENTS.map(c => c[1]).join("")).catch(() => {});
 
   let order = [], next = 0, commentTimer = 0, heartTimer = 0;
   function addComment() {

@@ -12,7 +12,8 @@ assets/emoji, commercial-safe licence) stream up from the like button (tapping i
 Comments come from the "Export" tab of the comments sheet
 (https://docs.google.com/spreadsheets/d/1y0fd0asvhpGCRcDAZSw3yyGVvRMKs8YEGHQBTW7rArg): username, short comment and avatar
 frame, copied into `COMMENTS` in index.html. Each avatar is the frame's photo from the "Avatars" tab, cropped square to
-88px as `assets/avatars/<frame>.jpg`.
+88px (center 88%, which trims thin white edges some source photos have) as `assets/avatars/<frame>.jpg`.
+Emoji in the comments and caption render in Google's Noto Color Emoji web font (OFL, commercial-safe) rather than the device's own emoji.
 
 Hidden button: tapping the username at the top of the post fills the caption with "Jamme jamme, let's go to the top!".
 
