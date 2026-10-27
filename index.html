@@ -381,8 +381,8 @@
   });
 
   // Hidden photo swap: hold the photo on the post screen (about half a second) to choose a different
-  // photo from the phone, or go back to assets/photo.jpg. The chosen photo is kept on this device
-  // (IndexedDB) and used on both screens until it's changed again.
+  // photo from the phone, or go back to assets/photo.jpg. The chosen photo is used on both screens
+  // until the page reloads, which brings back the original.
   const ORIGINAL_PHOTO = "assets/photo.jpg";
   const photoImgs = [post.querySelector(".photo img"), story.querySelector(".frame img")];
   const swap = document.getElementById("swap");
@@ -393,21 +393,7 @@
     photoURL = blob ? URL.createObjectURL(blob) : null;
     photoImgs.forEach(img => { img.src = photoURL || ORIGINAL_PHOTO; });
   }
-  function photoStore(mode, fn) {
-    return new Promise(resolve => {
-      try {
-        const open = indexedDB.open("post-prop", 1);
-        open.onupgradeneeded = () => open.result.createObjectStore("photo");
-        open.onsuccess = () => {
-          const req = fn(open.result.transaction("photo", mode).objectStore("photo"));
-          req.onsuccess = () => resolve(req.result);
-          req.onerror = () => resolve(null);
-        };
-        open.onerror = () => resolve(null);
-      } catch { resolve(null); }
-    });
-  }
-  photoStore("readonly", s => s.get("photo")).then(blob => { if (blob) showPhoto(blob); });
+  try { indexedDB.deleteDatabase("post-prop"); } catch {}   // clears a photo saved by an earlier version
 
   // Phone photos are scaled down to 2000px on the long edge so they stay light.
   async function shrink(file) {
@@ -427,8 +413,6 @@
     if (!file) return;
     const blob = await shrink(file);
     showPhoto(blob);
-    photoStore("readwrite", s => s.put(blob, "photo"));
-    if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
   });
 
   let holdTimer = 0, holdX = 0, holdY = 0;
@@ -447,7 +431,6 @@
   document.getElementById("swapReset").addEventListener("click", () => {
     swap.hidden = true;
     showPhoto(null);
-    photoStore("readwrite", s => s.delete("photo"));
   });
   document.getElementById("swapCancel").addEventListener("click", () => { swap.hidden = true; });
   swap.addEventListener("click", e => { if (e.target === swap) swap.hidden = true; });
