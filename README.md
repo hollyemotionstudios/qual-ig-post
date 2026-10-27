@@ -7,7 +7,7 @@ Flow: post with an empty caption box → tap the caption box to type: the device
 with the photo shrinking to fit (like IG Posting 2; on a computer it uses the Figma spacing)
 → tap the blue arrow → shared screen, shown as a single story (one progress bar). Both screens show the attached song "Hark Madley • Jamme, Jamme" with an animated waveform under the username. The shared screen shows the typed caption over the photo as black text on white blocks (if nothing was typed it
 shows "Jamme jamme, let's go to the top!"), and plays live reactions: emoji (😄 😁 😆 😊 🥰 😍 🤩 😎 ❤️ 👏, Noto Color Emoji images in
-assets/emoji, commercial-safe licence) stream up from the like button (tapping it adds a burst), and viewer comments roll up the lower part of the photo in the sheet's row order. The X goes back to the post and empties the caption for the next take.
+assets/emoji, commercial-safe licence) stream up from the like button (tapping it adds a burst), and viewer comments roll up the lower part of the photo in random order. The X goes back to the post and empties the caption for the next take.
 
 Comments come from the "Comments" tab of the comments sheet
 (https://docs.google.com/spreadsheets/d/1y0fd0asvhpGCRcDAZSw3yyGVvRMKs8YEGHQBTW7rArg): Username, Short comment and Avatar

@@ -362,7 +362,7 @@
   });
 
   // Live reactions on the shared screen. Comments (Username, Short comment, Avatar Frame) come from the
-  // "Comments" tab of the comments sheet and play in the sheet's row order; photos are assets/avatars/<frame>.jpg.
+  // "Comments" tab of the comments sheet and play in random order; photos are assets/avatars/<frame>.jpg.
   const COMMENTS = [
     ["sofia_e_basta", "JAMME JAMME!! 🇮🇹🔥", 87],
     ["suzuka_ren", "キミ、頂点へ！🏆", 149],
@@ -528,7 +528,7 @@
 
   function startReactions() {
     stopReactions();
-    order = COMMENTS.map((_, i) => i);   // sheet order, looping
+    order = COMMENTS.map((_, i) => i).sort(() => Math.random() - 0.5);   // random order each time
     next = 0;
     commentTimer = setTimeout(addComment, 700);
     heartTimer = setTimeout(heartStream, 500);
