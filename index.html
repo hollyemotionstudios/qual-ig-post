@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no, interactive-widget=resizes-visual">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no, interactive-widget=resizes-content">
 <meta name="theme-color" content="#000000">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -29,8 +29,9 @@
     --ease: cubic-bezier(.2, .8, .2, 1);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* overflow: clip (not just hidden) so the browser can't scroll the page to reveal the caption under the keyboard. */
   html, body {
-    height: 100%; overflow: hidden; overscroll-behavior: none;
+    height: 100%; overflow: hidden; overflow: clip; overscroll-behavior: none;
     background: var(--black); color: #fff;
     -webkit-tap-highlight-color: transparent;
     -webkit-user-select: none; user-select: none;
@@ -99,7 +100,7 @@
   #post.editing .gap { height: 24px; }
   /* Until the real keyboard is measured, assume the Figma "IG Posting 2" space (359px); see keyboardSpace() */
   #post.editing .spacer { height: 359px; }
-  #post.editing .photo img { object-position: 50% 18%; }
+  #post.editing .photo img { object-position: 50% 0%; }   /* keep the top of the photo as it shrinks */
 
   /* ---------- story (Sharing the post with others) ---------- */
   /* The strip above the photo (0–55px) is left empty for the device's own status bar. */
@@ -249,10 +250,11 @@
   // Screens taller than 523×847 (e.g. Galaxy S26 Ultra, 19.5:9) get a taller stage instead of black
   // bands: the photos grow, and everything at the bottom is anchored to the bottom edge.
   const MAX_H = 1240;
-  let scale = 1, stageY = 0, stageH = 847;
+  let scale = 1, stageX = 0, stageY = 0, stageH = 847, baseH = innerHeight;
   function fit() {
     if (editing) return;
     const W = innerWidth, H = innerHeight;
+    baseH = H;
     const top = insetEl.offsetHeight ? insetEl.offsetHeight + 6 : 0;
     const u = Math.min(W / 523, H / 847, (H - top) / (847 - 27));
     let y = Math.max(0, top - 27 * u);
@@ -261,9 +263,9 @@
     const x = (W - 523 * u) / 2;
     stage.style.height = h + "px";
     stage.style.transform = `translate(${x}px, ${y}px) scale(${u})`;
-    scale = u; stageY = y; stageH = h;
+    scale = u; stageX = x; stageY = y; stageH = h;
   }
-  addEventListener("resize", fit);
+  addEventListener("resize", () => editing ? onViewport() : fit());
   fit();
 
   // Caption: grows to 4 lines, then scrolls.
@@ -275,15 +277,18 @@
   caption.addEventListener("input", sizeCaption);
   setText(startText);
 
-  // The device's own keyboard: the page measures where it starts (visual viewport bottom) and sits
-  // the caption box 12px above it; the photo takes whatever height is left.
+  // The device's own keyboard: the page measures where it starts (bottom of the visible area) and sits
+  // the caption box 12px above it; the photo shrinks from the bottom, so the header and the top of the
+  // photo never move. The keyboard resizes the page (interactive-widget=resizes-content) rather than
+  // panning it; if the browser pans anyway, the stage is shifted down by the same amount.
   let keyboardSeen = false;
-  function keyboardSpace(visibleBottom) {
+  function keyboardSpace(visibleTop, visibleBottom) {
     if (!editing) return;
-    const kb = innerHeight - visibleBottom;
+    stage.style.transform = `translate(${stageX}px, ${stageY + visibleTop}px) scale(${scale})`;
+    const kb = baseH - visibleBottom + visibleTop;
     if (kb > 80) {
       keyboardSeen = true;
-      const below = (stageY + stageH * scale - visibleBottom) / scale;   // stage px hidden by the keyboard
+      const below = (stageY + visibleTop + stageH * scale - visibleBottom) / scale;   // stage px hidden by the keyboard
       spacer.style.height = Math.max(36, below + 12) + "px";
     } else if (keyboardSeen) {
       caption.blur();   // keyboard closed with the back gesture: back to the resting post
@@ -291,8 +296,10 @@
   }
   function onViewport() {
     scrollTo(0, 0);   // keep the page pinned
+    document.documentElement.scrollTop = document.body.scrollTop = 0;
     const vv = window.visualViewport;
-    if (vv) keyboardSpace(vv.offsetTop + vv.height);
+    if (vv) keyboardSpace(vv.offsetTop, vv.offsetTop + vv.height);
+    else keyboardSpace(0, innerHeight);
   }
   if (window.visualViewport) {
     visualViewport.addEventListener("resize", onViewport);
@@ -310,8 +317,10 @@
     keyboardSeen = false;
     spacer.style.height = "";
     post.classList.remove("editing");
-    scrollTo(0, 0);
-    fit();
+    onViewport();
+    // Refit now only if the keyboard has already gone; otherwise the resize when it closes refits.
+    if (innerHeight > baseH - 80) fit();
+    else stage.style.transform = `translate(${stageX}px, ${stageY}px) scale(${scale})`;
   });
 
   // Tapping anywhere on the grey box starts typing, caret at the end.
