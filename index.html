@@ -180,9 +180,9 @@
     -webkit-box-decoration-break: clone; box-decoration-break: clone;
   }
 
-  /* Rainbow hearts float up from the like button. */
+  /* Emoji reactions float up from the like button. */
   .hearts { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
-  .hearts svg { position: absolute; left: 0; top: 0; overflow: visible; will-change: transform, opacity; }
+  .hearts img { position: absolute; left: 0; top: 0; will-change: transform, opacity; }
 </style>
 </head>
 <body>
@@ -489,22 +489,24 @@
     commentTimer = setTimeout(addComment, 650 + Math.random() * 750);
   }
 
-  const RAINBOW = ["#ff3b5c", "#ff8a3d", "#ffd23f", "#5fe07a", "#3fc4ff", "#4f7bff", "#9b6bff", "#ff6fcf"];
-  const HEART = "M12 21.4C5.4 16 0 11.5 0 6.6 0 2.9 2.9 0 6.5 0c2.2 0 4.2 1.1 5.5 2.8C13.3 1.1 15.3 0 17.5 0 21.1 0 24 2.9 24 6.6c0 4.9-5.4 9.4-12 14.8z";
-  // One heart: starts small on the like button (428, 49px above the bottom), drifts up the right side with a sway, fades out.
-  function floatHeart() {
-    const size = 20 + Math.random() * 18;
-    const color = RAINBOW[Math.floor(Math.random() * RAINBOW.length)];
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", "0 0 24 22");
-    svg.setAttribute("width", size); svg.setAttribute("height", size * 22 / 24);
-    svg.innerHTML = `<path d="${HEART}" fill="${color}"/>`;
-    heartLayer.append(svg);
+  // Floating reactions: Noto Color Emoji images (Google, commercial-safe licence; see assets/emoji/README.txt).
+  // File names are the Unicode code points: 😄 😁 😆 😊 🥰 😍 🤩 😎 ❤️
+  const EMOJI = ["1f604", "1f601", "1f606", "1f60a", "1f970", "1f60d", "1f929", "1f60e", "2764"];
+  addEventListener("load", () => EMOJI.forEach(c => { new Image().src = `assets/emoji/${c}.png`; }));
+  // One emoji: starts small on the like button (428, 49px above the bottom), drifts up the right side with a sway, fades out.
+  function floatEmoji() {
+    const size = 24 + Math.random() * 16;
+    const img = document.createElement("img");
+    img.src = `assets/emoji/${EMOJI[Math.floor(Math.random() * EMOJI.length)]}.png`;
+    img.alt = "";
+    img.width = img.height = size;
+    heartLayer.append(img);
 
     const x0 = 428 - size / 2, y0 = stageH - 57 - size / 2;
     const rise = (360 + Math.random() * 160) * stageH / 847;
     const drift = 20 + Math.random() * 40;
     const sway = 8 + Math.random() * 12, phase = Math.random() * 6.28;
+    const tilt = (Math.random() - 0.5) * 30;
     const frames = [];
     for (let i = 0; i <= 10; i++) {
       const t = i / 10;
@@ -512,12 +514,12 @@
       const y = y0 - rise * (1 - Math.pow(1 - t, 1.4));
       const s = t < 0.12 ? 0.3 + 0.7 * (t / 0.12) : 1;
       const o = t < 0.1 ? t / 0.1 : t > 0.7 ? (1 - t) / 0.3 : 1;
-      frames.push({ transform: `translate(${x}px, ${y}px) scale(${s})`, opacity: o * 0.92 });
+      frames.push({ transform: `translate(${x}px, ${y}px) scale(${s}) rotate(${tilt * t}deg)`, opacity: o });
     }
-    svg.animate(frames, { duration: 2600 + Math.random() * 1400, easing: "linear" }).onfinish = () => svg.remove();
+    img.animate(frames, { duration: 2600 + Math.random() * 1400, easing: "linear" }).onfinish = () => img.remove();
   }
   function heartStream() {
-    floatHeart();
+    floatEmoji();
     heartTimer = setTimeout(heartStream, 160 + Math.random() * 260);
   }
 
@@ -564,7 +566,7 @@
   document.getElementById("close").addEventListener("click", showPost);
   heart.addEventListener("click", () => {
     heart.classList.toggle("on");
-    for (let i = 0; i < 6; i++) setTimeout(floatHeart, i * 70);   // a burst on every tap
+    for (let i = 0; i < 6; i++) setTimeout(floatEmoji, i * 70);   // a burst on every tap
   });
   addEventListener("keydown", e => { if (e.key === "Escape" && !story.hidden) showPost(); });
 
