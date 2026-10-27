@@ -87,6 +87,16 @@
     width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%;
     transition: object-position .34s var(--ease);
   }
+  /* Hidden photo swap: hold the photo on the post screen for this menu. */
+  .swap {
+    position: absolute; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,.55); transition: opacity .2s;
+  }
+  .swap[hidden] { display: flex; opacity: 0; pointer-events: none; }
+  .swap .sheet { width: 320px; border-radius: 18px; overflow: hidden; background: #262626; }
+  .swap button { display: block; width: 100%; padding: 18px; text-align: center; font: 500 17px/1 var(--ui); color: #fff; }
+  .swap button + button { border-top: 1px solid rgba(255,255,255,.12); }
+  .swap button.dim { color: rgba(255,255,255,.6); }
   .gap { flex: none; height: 38px; transition: height .34s var(--ease); }
   .box {
     flex: none; position: relative; margin: 0 -4px;
@@ -238,6 +248,15 @@
     </div>
   </section>
 
+
+  <div class="swap" id="swap" hidden>
+    <div class="sheet">
+      <button id="swapPick">Choose photo</button>
+      <button id="swapReset">Use original photo</button>
+      <button class="dim" id="swapCancel">Cancel</button>
+    </div>
+  </div>
+  <input type="file" id="photoFile" accept="image/*" hidden>
 </div>
 <script>
   // URL options: ?text=…  pre-fills the caption (empty by default)
@@ -360,6 +379,78 @@
   post.addEventListener("pointerdown", e => {
     if (editing && !e.target.closest(".box")) caption.blur();
   });
+
+  // Hidden photo swap: hold the photo on the post screen (about half a second) to choose a different
+  // photo from the phone, or go back to assets/photo.jpg. The chosen photo is kept on this device
+  // (IndexedDB) and used on both screens until it's changed again.
+  const ORIGINAL_PHOTO = "assets/photo.jpg";
+  const photoImgs = [post.querySelector(".photo img"), story.querySelector(".frame img")];
+  const swap = document.getElementById("swap");
+  const photoFile = document.getElementById("photoFile");
+  let photoURL = null;
+  function showPhoto(blob) {
+    if (photoURL) URL.revokeObjectURL(photoURL);
+    photoURL = blob ? URL.createObjectURL(blob) : null;
+    photoImgs.forEach(img => { img.src = photoURL || ORIGINAL_PHOTO; });
+  }
+  function photoStore(mode, fn) {
+    return new Promise(resolve => {
+      try {
+        const open = indexedDB.open("post-prop", 1);
+        open.onupgradeneeded = () => open.result.createObjectStore("photo");
+        open.onsuccess = () => {
+          const req = fn(open.result.transaction("photo", mode).objectStore("photo"));
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => resolve(null);
+        };
+        open.onerror = () => resolve(null);
+      } catch { resolve(null); }
+    });
+  }
+  photoStore("readonly", s => s.get("photo")).then(blob => { if (blob) showPhoto(blob); });
+
+  // Phone photos are scaled down to 2000px on the long edge so they stay light.
+  async function shrink(file) {
+    try {
+      const bmp = await createImageBitmap(file);
+      const k = Math.min(1, 2000 / Math.max(bmp.width, bmp.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(bmp.width * k);
+      c.height = Math.round(bmp.height * k);
+      c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+      return await new Promise(r => c.toBlob(b => r(b || file), "image/jpeg", 0.9));
+    } catch { return file; }
+  }
+  photoFile.addEventListener("change", async () => {
+    const file = photoFile.files[0];
+    photoFile.value = "";
+    if (!file) return;
+    const blob = await shrink(file);
+    showPhoto(blob);
+    photoStore("readwrite", s => s.put(blob, "photo"));
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+  });
+
+  let holdTimer = 0, holdX = 0, holdY = 0;
+  const photoBox = post.querySelector(".photo");
+  photoBox.addEventListener("pointerdown", e => {
+    if (editing) return;
+    holdX = e.clientX; holdY = e.clientY;
+    holdTimer = setTimeout(() => { holdTimer = 0; swap.hidden = false; }, 550);
+  });
+  const endHold = () => { clearTimeout(holdTimer); holdTimer = 0; };
+  photoBox.addEventListener("pointerup", endHold);
+  photoBox.addEventListener("pointercancel", endHold);
+  photoBox.addEventListener("pointermove", e => { if (Math.hypot(e.clientX - holdX, e.clientY - holdY) > 12) endHold(); });
+  photoBox.addEventListener("contextmenu", e => e.preventDefault());
+  document.getElementById("swapPick").addEventListener("click", () => { swap.hidden = true; photoFile.click(); });
+  document.getElementById("swapReset").addEventListener("click", () => {
+    swap.hidden = true;
+    showPhoto(null);
+    photoStore("readwrite", s => s.delete("photo"));
+  });
+  document.getElementById("swapCancel").addEventListener("click", () => { swap.hidden = true; });
+  swap.addEventListener("click", e => { if (e.target === swap) swap.hidden = true; });
 
   // Live reactions on the shared screen. Comments (Username, Short comment, Avatar Frame) come from the
   // "Comments" tab of the comments sheet and play in random order; photos are assets/avatars/<frame>.jpg.

@@ -17,6 +17,11 @@ Emoji in the comments and caption render in Google's Noto Color Emoji web font (
 
 Hidden button: tapping the username at the top of the post fills the caption with "Jamme jamme, let's go to the top!".
 
+Swapping the photo (no GitHub or Vercel needed): on the phone, press and hold the photo on the post screen for about half a
+second. A menu offers "Choose photo" (opens the phone's gallery, camera or files) and "Use original photo". The chosen photo
+is used on both screens and is kept on that device (IndexedDB, scaled to 2000px on the long edge) until it's changed or
+reset; it doesn't change the photo for anyone else. To change the default photo for everyone, replace assets/photo.jpg.
+
 Responsive height: the design is 523×847 (Fold 8 cover screen). Taller phones such as the Galaxy S26 Ultra (19.5:9,
 about 412×891 CSS px fullscreen) scale to the screen width and get a taller stage instead of black bands: the photos
 grow, and the story's controls, comments, caption and hearts stay anchored to the bottom.
