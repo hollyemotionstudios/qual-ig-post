@@ -7,11 +7,11 @@ Flow: post with an empty caption box → tap the caption box to type: the device
 with the photo shrinking to fit (like IG Posting 2; on a computer it uses the Figma spacing)
 → tap the blue arrow → shared screen, shown as a single story (one progress bar). Both screens show the attached song "Hark Madley • Jamme, Jamme" with an animated waveform under the username. The shared screen shows the typed caption over the photo as black text on white blocks (if nothing was typed it
 shows "Jamme jamme, let's go to the top!"), and plays live reactions: emoji (😄 😁 😆 😊 🥰 😍 🤩 😎 ❤️ 👏, Noto Color Emoji images in
-assets/emoji, commercial-safe licence) stream up from the like button (tapping it adds a burst), and viewer comments roll up the lower part of the photo in random order. The X goes back to the post and empties the caption for the next take.
+assets/emoji, commercial-safe licence) stream up from the like button (tapping it adds a burst), and viewer comments roll up the lower part of the photo in the sheet's row order. The X goes back to the post and empties the caption for the next take.
 
-Comments come from the "Export" tab of the comments sheet
-(https://docs.google.com/spreadsheets/d/1y0fd0asvhpGCRcDAZSw3yyGVvRMKs8YEGHQBTW7rArg): username, short comment and avatar
-frame, copied into `COMMENTS` in index.html. Each avatar is the frame's photo from the "Avatars" tab, cropped square to
+Comments come from the "Comments" tab of the comments sheet
+(https://docs.google.com/spreadsheets/d/1y0fd0asvhpGCRcDAZSw3yyGVvRMKs8YEGHQBTW7rArg): Username, Short comment and Avatar
+Frame columns, copied into `COMMENTS` in index.html. Each avatar is the frame's photo from the "Avatars" tab, cropped square to
 88px (center 88%, which trims thin white edges some source photos have) as `assets/avatars/<frame>.jpg`.
 Emoji in the comments and caption render in Google's Noto Color Emoji web font (OFL, commercial-safe) rather than the device's own emoji.
 
