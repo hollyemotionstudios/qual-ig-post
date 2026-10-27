@@ -5,7 +5,7 @@ and "Sharing the post with others" (9:3013), all 523×847 (Fold folded screen).
 
 Flow: post with an empty caption box → tap the caption box to type: the device's own keyboard opens and the caption box sits just above it,
 with the photo shrinking to fit (like IG Posting 2; on a computer it uses the Figma spacing)
-→ tap the blue arrow → shared screen, shown as the last of 5 stories (four full bars, the fifth fills). The shared screen shows the typed caption over the photo as black text on white blocks (if nothing was typed it
+→ tap the blue arrow → shared screen, shown as a single story (one progress bar). Both screens show the attached song "Mark Hadley • Funiculì, Funiculà" with an animated waveform under the username. The shared screen shows the typed caption over the photo as black text on white blocks (if nothing was typed it
 shows "Jamme jamme, let's go to the top!"), and plays live reactions: rainbow hearts stream up from the like button (tapping it adds a
 burst), and viewer comments roll up the lower part of the photo in random order. The X goes back to the post and empties the caption for the next take.
 

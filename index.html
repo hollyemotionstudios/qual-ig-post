@@ -62,6 +62,17 @@
   }
   .user .av { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
   .user .when { color: rgba(255,255,255,.6); margin-left: 2px; }
+  /* Attached song under the username, with a small animated waveform (like Instagram). */
+  .user .who { display: flex; flex-direction: column; gap: 5px; }
+  .user .song { display: flex; align-items: center; gap: 5px; font-size: 11px; color: rgba(255,255,255,.92); }
+  .wave { display: flex; align-items: center; gap: 1.5px; height: 10px; }
+  .wave b { width: 2px; height: 100%; border-radius: 1px; background: currentColor; transform-origin: 50% 50%; animation: wave .9s ease-in-out infinite alternate; }
+  .wave b:nth-child(1) { animation-duration: .7s; }
+  .wave b:nth-child(2) { animation-duration: .5s; animation-delay: -.2s; }
+  .wave b:nth-child(3) { animation-duration: .8s; animation-delay: -.4s; }
+  .wave b:nth-child(4) { animation-duration: .6s; animation-delay: -.1s; }
+  @keyframes wave { from { transform: scaleY(.3); } to { transform: scaleY(1); } }
+  #story .user { text-shadow: 0 1px 2px rgba(0,0,0,.35); }
   #post .user { left: 40px; top: 27px; padding: 10px; margin: -10px; }   /* hidden button: fills the caption */
 
   .col {
@@ -119,8 +130,7 @@
   .bars { position: absolute; left: 40px; top: 61px; width: 450px; height: 2px; display: flex; gap: 6px; z-index: 1; }
   .bars span { flex: 1; border-radius: 1px; background: rgba(255,255,255,.35); overflow: hidden; }
   .bars i { display: block; height: 100%; width: 0; background: #fff; }
-  .bars span:not(:last-child) i { width: 100%; }   /* the post is the last of 5 stories */
-  #story.play .bars span:last-child i { width: 100%; transition: width var(--story-time, 6s) linear; }
+  #story.play .bars i { width: 100%; transition: width var(--story-time, 6s) linear; }
 
   #story .user { left: 36px; top: 75px; z-index: 1; }
   .more { position: absolute; left: 420px; top: 80px; width: 24px; height: 24px; z-index: 1; }
@@ -181,7 +191,10 @@
   <section id="post" class="screen">
     <div class="user">
       <img class="av" src="assets/avatar.jpg" alt="">
-      <span>Kimiantonelli <span class="when">18h</span></span>
+      <span class="who">
+        <span>Kimiantonelli <span class="when">18h</span></span>
+        <span class="song"><i class="wave"><b></b><b></b><b></b><b></b></i>Mark Hadley • Funiculì, Funiculà</span>
+      </span>
     </div>
     <div class="col">
       <div class="photo"><img src="assets/photo.jpg" alt=""></div>
@@ -201,10 +214,13 @@
     <div class="frame"><img src="assets/photo.jpg" alt=""><div class="shade"></div></div>
     <div class="comments" aria-hidden="true"><ol id="comments"></ol></div>
     <div class="story-caption"><span id="storyCaption"></span></div>
-    <div class="bars"><span><i></i></span><span><i></i></span><span><i></i></span><span><i></i></span><span><i></i></span></div>
+    <div class="bars"><span><i></i></span></div>
     <div class="user">
       <img class="av" src="assets/avatar.jpg" alt="">
-      <span>Kimiantonelli <span class="when">18h</span></span>
+      <span class="who">
+        <span>Kimiantonelli <span class="when">18h</span></span>
+        <span class="song"><i class="wave"><b></b><b></b><b></b><b></b></i>Mark Hadley • Funiculì, Funiculà</span>
+      </span>
     </div>
     <div class="more"><svg style="position:absolute;left:5px;top:10.5px" width="14" height="3" viewBox="0 0 14 3"><circle cx="1.5" cy="1.5" r="1.5" fill="#fff"/><circle cx="7" cy="1.5" r="1.5" fill="#fff"/><circle cx="12.5" cy="1.5" r="1.5" fill="#fff"/></svg></div>
     <button class="close" id="close" aria-label="Close">
