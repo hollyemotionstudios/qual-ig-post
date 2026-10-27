@@ -16,6 +16,10 @@ frame, copied into `COMMENTS` in index.html. Each avatar is the frame's photo fr
 
 Hidden button: tapping the username at the top of the post fills the caption with "Jamme jamme, let's go to the top!".
 
+Responsive height: the design is 523×847 (Fold 8 cover screen). Taller phones such as the Galaxy S26 Ultra (19.5:9,
+about 412×891 CSS px fullscreen) scale to the screen width and get a taller stage instead of black bands: the photos
+grow, and the story's controls, comments, caption and hearts stay anchored to the bottom.
+
 URL options:
 - `?text=...` pre-fills the caption (it starts empty)
 - `?story=6` sets the seconds for the story progress bar
