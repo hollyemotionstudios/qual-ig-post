@@ -493,8 +493,8 @@
   }
 
   // Floating reactions: Noto Color Emoji images (Google, commercial-safe licence; see assets/emoji/README.txt).
-  // File names are the Unicode code points: 😄 😁 😆 😊 🥰 😍 🤩 😎 ❤️
-  const EMOJI = ["1f604", "1f601", "1f606", "1f60a", "1f970", "1f60d", "1f929", "1f60e", "2764"];
+  // File names are the Unicode code points: 😄 😁 😆 😊 🥰 😍 🤩 😎 ❤️ 👏
+  const EMOJI = ["1f604", "1f601", "1f606", "1f60a", "1f970", "1f60d", "1f929", "1f60e", "2764", "1f44f"];
   addEventListener("load", () => EMOJI.forEach(c => { new Image().src = `assets/emoji/${c}.png`; }));
   // One emoji: starts small on the like button (428, 49px above the bottom), drifts up the right side with a sway, fades out.
   function floatEmoji() {
